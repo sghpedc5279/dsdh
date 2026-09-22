@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>《数据科学与数字人文》互动教材</title>
+<style>
+  :root{
+    --ink:#1F2A44;      /* 深墨蓝 */
+    --paper:#F6F3EC;    /* 宣纸 */
+    --seal:#9E2B25;     /* 印红 */
+    --slate:#5B6B8C;    /* 石板蓝 */
+    --line:#DCD6C8;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;background:var(--paper);color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",system-ui,sans-serif;
+    display:flex;align-items:center;justify-content:center;padding:40px 20px;
+  }
+  .wrap{max-width:760px;width:100%}
+  .eyebrow{font-size:13px;letter-spacing:3px;color:var(--seal);margin:0 0 10px}
+  h1{margin:0 0 8px;font-size:36px;letter-spacing:2px;font-weight:700;
+     border-left:6px solid var(--seal);padding-left:14px}
+  .sub{margin:0 0 34px;color:var(--slate);font-size:15px;padding-left:20px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+  .card{
+    display:block;text-decoration:none;color:inherit;background:#fff;
+    border:1px solid var(--line);border-radius:6px;padding:24px 22px 20px;
+    box-shadow:0 2px 10px rgba(31,42,68,.06);
+    transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+  }
+  .card:hover{transform:translateY(-3px);border-color:var(--seal);
+              box-shadow:0 8px 22px rgba(31,42,68,.13)}
+  .tag{display:inline-block;font-size:12px;letter-spacing:1px;color:var(--seal);
+       border:1px solid var(--seal);border-radius:3px;padding:2px 8px;margin-bottom:12px}
+  .card h2{margin:0 0 8px;font-size:20px;font-weight:700}
+  .card p{margin:0 0 16px;color:var(--slate);font-size:14px;line-height:1.7}
+  .go{color:var(--seal);font-size:14px;font-weight:700}
+  .tips{margin-top:32px;padding-top:16px;border-top:1px solid var(--line);
+        color:var(--slate);font-size:13px;line-height:2}
+  .tips b{color:var(--ink)}
+  footer{margin-top:20px;color:var(--slate);font-size:12px;opacity:.8}
+  @media (max-width:520px){ h1{font-size:26px} .sub{margin-bottom:24px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">苏州大学 社会学院 · 图情档</p>
+  <h1>《数据科学与数字人文》</h1>
+  <p class="sub">互动教材 · 12 模块 + 综合项目 · 在线阅读与章节下载</p>
+
+  <div class="cards">
+    <a class="card" href="book.html">
+      <div class="tag">在 线 阅 读</div>
+      <h2>翻页教材</h2>
+      <p>171 页 · 16:9 显示<br>传道·授业 / 思想·碰撞 / 实验·复现</p>
+      <span class="go">开始阅读 →</span>
+    </a>
+
+    <a class="card" href="download.html">
+      <div class="tag">章 节 下 载</div>
+      <h2>14 篇 Word 文档</h2>
+      <p>按模块拆分 · 图片已内嵌<br>可直接导入飞书供划词评论</p>
+      <span class="go">前往下载 →</span>
+    </a>
+  </div>
+
+  <div class="tips">
+    <div><b>阅读操作：</b>键盘 ← → 翻页 · <b>T</b> 打开目录 · <b>F</b> 全屏 · 点击图片可全屏查看</div>
+    <div><b>课堂讨论：</b>请前往飞书知识库对应文档，使用「划词评论」参与互动</div>
+  </div>
+
+  <footer>托管于 GitHub Pages · 教材内容公开共享</footer>
+</div>
+</body>
+</html>
