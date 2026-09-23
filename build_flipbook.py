@@ -147,7 +147,7 @@ def parse_book(path):
             if any(s in title for s in CHAPTER_SKIP):
                 cur = None
                 continue
-            cur = {'title': title, 'label': chapter_label(title), 'sections': []}
+            cur = {'title': title, 'label': chapter_label(title), 'sections': [], 'intro': []}
             chapters.append(cur)
             continue
         if cur is None:
@@ -170,6 +170,8 @@ def parse_book(path):
             continue
         if in_sec:
             buf.append(ln)
+        else:
+            cur['intro'].append(ln)   # 章标题下、首个 ### 之前的引言（学习目标/引言图等）
     flush()
     return chapters
 
@@ -729,7 +731,9 @@ def build(md_path, out_path, title, key):
 
         q, a, g = PQ(ch['title'], ch['title'])
         cover = first_module_image(ch)
-        agenda = cover
+        intro_md = '\n\n'.join(ch.get('intro', []))
+        intro_html = render_embed(intro_md, base_dir=HERE) if intro_md.strip() else ''
+        agenda = cover + intro_html
         for k, nm, _, col in PARTS:
             arr = parts[k]
             if not arr:
