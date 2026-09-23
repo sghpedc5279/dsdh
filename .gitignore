@@ -1,3 +1,5 @@
 .*
 !.gitignore
 !.github
+book.html
+src/_merged_src.md
