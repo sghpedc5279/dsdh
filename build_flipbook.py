@@ -531,12 +531,10 @@ function buildToc(){
   let h='';
   CH.forEach(c=>{
     h+='<div class="ch ui" data-p="'+c.p+'">'+esc(c.t)+'</div>';
-    ['teach','talk','lab'].forEach(k=>{
-      const arr=c[k]||[];
-      h+='<div class="pt ui" style="color:'+PCOL[k]+'">'+PNM[k]+'（'+arr.length+'）</div>';
-      if(!arr.length) h+='<div class="empty">— 本模块该部分暂无独立小节 —</div>';
-      arr.forEach(s=>{h+='<div class="sec" data-p="'+s.p+'">'+esc(s.t)+'</div>';});
-    });
+    const arr=c.all||[];
+    if(!arr.length){h+='<div class="empty">— 本模块暂无小节 —</div>';}
+    arr.forEach(s=>{h+='<div class="sec" data-p="'+s.p+'">'+
+      '<span style="color:'+(s.c||'#1F2A44')+'">●</span> '+esc(s.t)+'</div>';});
   });
   $('tocBody').innerHTML=h;
   $('tocBody').querySelectorAll('[data-p]').forEach(el=>{el.onclick=()=>{go(+el.dataset.p);closeToc();};});
@@ -723,9 +721,9 @@ def build(md_path, out_path, title, key):
                   'b': '', 'q': q, 'a': a, 'g': g, 'cr': '封面'})
 
     for ch in chapters:
-        parts = {'teach': [], 'talk': [], 'lab': []}
-        for s in ch['sections']:
-            parts[classify(s['title'], s['body'])].append(s)
+        # —— 按 md 原序平铺：不再按「传道/思想/实验」重组，顺序与教材完全一致 ——
+        ordered = ch['sections']
+        types = [classify(s['title'], s['body']) for s in ordered]
         short = re.sub(r'^(模块[^\s]*|第[^\s]*部分)\s*', '', ch['title'])
         nav = {'t': ch['label'] + '　' + short, 'p': len(pages)}
 
@@ -734,63 +732,52 @@ def build(md_path, out_path, title, key):
         intro_md = '\n\n'.join(ch.get('intro', []))
         intro_html = render_embed(intro_md, base_dir=HERE) if intro_md.strip() else ''
         agenda = cover + intro_html
-        for k, nm, _, col in PARTS:
-            arr = parts[k]
-            if not arr:
-                continue
-            agenda += ('<div class="grp"><div class="nm" style="color:%s">%s · %d 节</div><ol>%s</ol></div>'
-                       % (col, nm, len(arr),
-                          ''.join('<li>%d　%s</li>' % (i + 1, bh.esc_text(clean_title(x['title'])))
-                                  for i, x in enumerate(arr))))
+        if ordered:
+            lis = ''.join('<li><span style="color:%s">●</span> %d　%s</li>'
+                          % (PART_COLOR[types[i]], i + 1,
+                             bh.esc_text(clean_title(s['title'])))
+                          for i, s in enumerate(ordered))
+            agenda += ('<div class="grp"><div class="nm">本章小节（按教材原序 · 共 %d 节）</div>'
+                       '<ol>%s</ol></div>' % (len(ordered), lis))
         pages.append({'k': 'chap', 't': short, 'm': ch['label'], 'pn': '', 'c': '', 'n': '',
                       'b': agenda, 'q': q, 'a': a, 'g': g,
                       'cr': ch['label'] + ' · 本模块导览'})
         ch_nav.append(nav)
 
-        for k, nm, _, col in PARTS:
-            arr = parts[k]
-            nav[k] = []
-            if not arr:
-                continue
-            q, a, g = PQ(nm + ' ' + ch['title'], ch['title'])
-            outline = ('<ol class="pnl">%s</ol>'
-                       % ''.join('<li>%d　%s</li>' % (i + 1, bh.esc_text(clean_title(x['title'])))
-                                 for i, x in enumerate(arr)))
-            pages.append({'k': 'part', 't': nm, 'm': ch['label'] + '　' + short,
-                          'pn': nm, 'c': col, 'cnt': len(arr), 'n': '',
-                          'b': outline, 'q': q, 'a': a, 'g': g,
-                          'cr': ch['label'] + ' · ' + nm})
-            packed = pack_pages(arr)
-            seen = {}
-            last_ptitle = None
-            for items, secs in packed:
-                nums = [s + 1 for s in secs]
-                nlab = ('第 %d 节' % nums[0]) if len(nums) == 1 else \
-                       ('第 %d–%d 节' % (nums[0], nums[-1]))
-                head_title = clean_title(arr[secs[0]]['title'])
-                ptitle = '%d　%s' % (nums[0], head_title)
-                ptitle_disp = ptitle + '（续）' if ptitle == last_ptitle else ptitle
-                last_ptitle = ptitle
-                body_md, started = [], False
-                for it in items:
-                    if it['is_head'] and not started:
-                        started = True
-                        continue
-                    body_md.append(it['md'])
-                plain = re.sub(r'[#*`>\-\|]', ' ', '\n\n'.join(body_md))
-                q, a, g = PQ(head_title + ' ' + nm, plain)
-                pidx = len(pages)
-                pages.append({'k': 'cont', 't': ptitle_disp, 'm': ch['label'] + '　' + short,
-                              'pn': nm, 'c': col, 'n': nlab,
-                              'b': render_embed('\n\n'.join(body_md)),
-                              'q': q, 'a': a, 'g': g,
-                              'cr': ch['label'] + ' · ' + nm + ' · ' + ptitle_disp})
-                for s in secs:
-                    if s not in seen:
-                        seen[s] = pidx
-            for si, s in enumerate(arr):
-                nav[k].append({'t': '%d　%s' % (si + 1, clean_title(s['title'])),
-                               'p': seen.get(si, len(pages) - 1)})
+        packed = pack_pages(ordered)
+        seen = {}
+        last_ptitle = None
+        for items, secs in packed:
+            fk = types[secs[0]]
+            nm = PART_NAME[fk]; col = PART_COLOR[fk]
+            nums = [s + 1 for s in secs]
+            nlab = ('第 %d 节' % nums[0]) if len(nums) == 1 else \
+                   ('第 %d–%d 节' % (nums[0], nums[-1]))
+            head_title = clean_title(ordered[secs[0]]['title'])
+            ptitle = '%d　%s' % (nums[0], head_title)
+            ptitle_disp = ptitle + '（续）' if ptitle == last_ptitle else ptitle
+            last_ptitle = ptitle
+            body_md, started = [], False
+            for it in items:
+                if it['is_head'] and not started:
+                    started = True
+                    continue
+                body_md.append(it['md'])
+            plain = re.sub(r'[#*`>\-\|]', ' ', '\n\n'.join(body_md))
+            q, a, g = PQ(head_title + ' ' + nm, plain)
+            pidx = len(pages)
+            pages.append({'k': 'cont', 't': ptitle_disp, 'm': ch['label'] + '　' + short,
+                          'pn': nm, 'c': col, 'n': nlab,
+                          'b': render_embed('\n\n'.join(body_md)),
+                          'q': q, 'a': a, 'g': g,
+                          'cr': ch['label'] + ' · ' + ptitle_disp})
+            for s in secs:
+                if s not in seen:
+                    seen[s] = pidx
+        nav['all'] = [{'t': '%d　%s' % (i + 1, clean_title(s['title'])),
+                       'p': seen.get(i, len(pages) - 1),
+                       'c': PART_COLOR[types[i]], 'n': PART_NAME[types[i]]}
+                      for i, s in enumerate(ordered)]
 
     def dump(o):
         s = json.dumps(o, ensure_ascii=False)
@@ -802,7 +789,8 @@ def build(md_path, out_path, title, key):
                .replace('__KEY__', key))
     open(out_path, 'w', encoding='utf-8').write(html)
     stat = {'chapters': len(chapters), 'pages': len(pages),
-            'parts': {k: sum(1 for c in ch_nav for _ in c.get(k, [])) for k, _, _, _ in PARTS}}
+            'parts': {k: sum(1 for c in ch_nav for s in c.get('all', [])
+                             if s.get('n') == PART_NAME[k]) for k, _, _, _ in PARTS}}
     return stat, ch_nav
 
 
