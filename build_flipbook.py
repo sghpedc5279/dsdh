@@ -507,6 +507,17 @@ overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 const PAGES = __PAGES__;
 const CH = __CH__;
 const KEY = "__KEY__";
+const CH_PAGES = CH.map(c => c.p);   // 章序号(1-based) -> 页索引
+function pageToCh(i){
+  for(let n=CH_PAGES.length-1;n>=0;n--){ if(i>=CH_PAGES[n]) return n+1; }
+  return 0;
+}
+function hashToPage(h){
+  const m=/^#ch(\d+)$/.exec(h||''); if(!m) return null;
+  const n=+m[1]; if(n>=1&&n<=CH_PAGES.length) return CH_PAGES[n-1];
+  return null;
+}
+function setHash(h){ try{ if((location.hash||'')!==h) history.replaceState(null,'',h); }catch(e){} }
 let cur = 0;
 try{const s=+localStorage.getItem(KEY); if(s&&s<PAGES.length) cur=s;}catch(e){}
 const $=id=>document.getElementById(id);
@@ -575,6 +586,8 @@ function go(i){
   $('pager').textContent = (i+1)+' / '+PAGES.length;
   $('prog').style.width = ((i+1)/PAGES.length*100)+'%';
   sheet.classList.remove('anim'); void sheet.offsetWidth; sheet.classList.add('anim');
+  const _cn = pageToCh(i);
+  setHash(_cn ? '#ch'+_cn : '');
   fitStage();
   $('sbody').scrollTop=0;
   fit();
@@ -639,6 +652,12 @@ $('lb').addEventListener('click',e=>{ if(e.target.id==='lb'||e.target.id==='lbCl
 $('lbPrev').onclick=e=>{e.stopPropagation();lbStep(-1);};
 $('lbNext').onclick=e=>{e.stopPropagation();lbStep(1);};
 buildToc(); go(cur);
+const _hp = hashToPage(location.hash);
+if(_hp !== null) go(_hp);
+window.addEventListener('hashchange', function(){
+  const p = hashToPage(location.hash);
+  if(p !== null) go(p);
+});
 </script>
 </body>
 </html>

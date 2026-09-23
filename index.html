@@ -41,6 +41,14 @@
         color:var(--slate);font-size:13px;line-height:2}
   .tips b{color:var(--ink)}
   footer{margin-top:20px;color:var(--slate);font-size:12px;opacity:.8}
+  .chapters{margin-top:30px;padding-top:18px;border-top:1px solid var(--line)}
+  .chapters h3{margin:0 0 14px;font-size:16px;color:var(--ink);letter-spacing:1px}
+  .chapters .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+  .chapters a{display:block;text-decoration:none;color:var(--ink);background:#fff;border:1px solid var(--line);
+    border-radius:6px;padding:10px 14px;font-size:13.5px;line-height:1.5;transition:.16s}
+  .chapters a:hover{border-color:var(--seal);color:var(--seal);transform:translateY(-2px);
+    box-shadow:0 6px 16px rgba(31,42,68,.12)}
+  .chapters a .no{display:inline-block;min-width:22px;color:var(--seal);font-weight:700;margin-right:6px}
   @media (max-width:520px){ h1{font-size:26px} .sub{margin-bottom:24px} }
 </style>
 </head>
@@ -62,6 +70,25 @@
   <div class="tips">
     <div><b>阅读操作：</b>键盘 ← → 翻页 · <b>T</b> 打开目录 · <b>F</b> 全屏 · 点击图片可全屏查看</div>
     <div><b>课堂讨论：</b>请前往飞书知识库对应文档，使用「划词评论」参与互动</div>
+  </div>
+
+  <div class="chapters">
+    <h3>章节直达（与源文件一一对应）</h3>
+    <div class="grid">
+      <a href="book.html#ch1"><span class="no">01</span>模块一 · 导论：当数据科学遇见数字人文</a>
+      <a href="book.html#ch2"><span class="no">02</span>模块二 · 人文数据的类型与获取</a>
+      <a href="book.html#ch3"><span class="no">03</span>模块三 · 数据处理基础：Python 与 pandas</a>
+      <a href="book.html#ch4"><span class="no">04</span>模块四 · 文本挖掘与 NLP</a>
+      <a href="book.html#ch5"><span class="no">05</span>模块五 · 数据可视化与视觉修辞</a>
+      <a href="book.html#ch6"><span class="no">06</span>模块六 · 社会网络分析</a>
+      <a href="book.html#ch7"><span class="no">07</span>模块七 · 空间人文与 GIS</a>
+      <a href="book.html#ch8"><span class="no">08</span>模块八 · 图像处理与计算机视觉</a>
+      <a href="book.html#ch9"><span class="no">09</span>模块九 · 知识图谱与语义技术</a>
+      <a href="book.html#ch10"><span class="no">10</span>模块十 · 机器学习与深度学习基础</a>
+      <a href="book.html#ch11"><span class="no">11</span>模块十一 · 大语言模型与生成式 AI</a>
+      <a href="book.html#ch12"><span class="no">12</span>模块十二 · 人工智能前沿进展</a>
+      <a href="book.html#ch13"><span class="no">13</span>综合项目与课程反思</a>
+    </div>
   </div>
 
   <footer>托管于 GitHub Pages · 教材内容公开共享</footer>
