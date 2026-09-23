@@ -10,8 +10,7 @@
 |---|---|
 | `index.html` | 首页，提供「在线阅读」与「章节下载」两个入口 |
 | `book.html` | 互动翻页教材（**由 CI 从 `src/` 自动生成**，勿手工编辑） |
-| `download.html` | 章节 Word 文档下载页 |
-| `chapters/` | 14 篇按模块拆分的 docx（图片已内嵌，静态下载资源） |
+| `download.html` | 章节下载页（章节 docx 已于 2026-09-23 移除，链接暂不可用；如需恢复须重跑 `split_for_feishu.py` 放回 `chapters/`） |
 | `src/` | **可编辑源**：`NN_标题.md` 按模块拆分，直接改这里即可改教材 |
 | `build_flipbook.py` `build_html.py` `quotes_bank.py` `split_md_source.py` | 翻页生成与源拆分脚本（零第三方依赖） |
 | `.github/workflows/deploy-pages.yml` | GitHub Actions：推送即由 `src/` 重建 `book.html` 并部署 |
