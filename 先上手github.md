@@ -82,3 +82,6 @@ Stirling-PDF
 
 yt-dlp
 免费下载YouTube、B站等网站视频，无广告。
+
+***关于公有与私有的区别***
+<img width="2454" height="824" alt="局部截取_20260924_091250" src="https://github.com/user-attachments/assets/03d9f323-8a9b-41e7-bfd0-8e7c8547d9db" />
