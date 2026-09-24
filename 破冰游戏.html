@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究生开学第一课·破冰游戏</title>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0;font-family:"Microsoft YaHei",sans-serif;}
+        body{background:#f4f7fb;padding:24px;line-height:1.6;color:#222;max-width:1400px;margin:0 auto;}
+        h1{text-align:center;color:#2c4b80;margin-bottom:8px;font-size:28px;}
+        .rule-block{background:#e8edf7;padding:14px 20px;border-radius:10px;margin-bottom:20px;max-width:1200px;margin-left:auto;margin-right:auto;}
+        .rule-block h4{margin-bottom:6px;color:#2c4b80;}
+        .container{display:grid;grid-template-columns:1fr 340px;gap:24px;}
+        .card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 10px #00000012;}
+        .card h2{color:#2c4b80;border-bottom:1px solid #e2e8f0;padding-bottom:8px;margin-bottom:16px;font-size:20px;}
+        .info-line{margin:10px 0;font-size:17px;}
+        .btn-group{margin:16px 0;display:flex;gap:10px;flex-wrap:wrap;}
+        button{padding:10px 18px;border:none;border-radius:8px;font-size:16px;cursor:pointer;transition:0.2s;}
+        .btn-sm{background:#2b5797;color:white;}
+        .btn-warning{background:#d48806;color:#fff;}
+        .btn-danger{background:#c23531;color:white;}
+        button:hover{opacity:0.85}
+        .log{height:300px;overflow-y:auto;background:#f8fafc;padding:14px;border-radius:8px;font-size:16px;white-space:pre-line;line-height:1.7;}
+        .question-box{background:#fff3cd;border:1px solid #ffeeba;padding:18px;border-radius:10px;margin-top:15px;}
+        .question-title{font-weight:bold;color:#856404;margin-bottom:8px;}
+        .final-panel{grid-column:1/-1;background:#e8f0fe;padding:20px;border-radius:12px;margin-top:10px;display:none;}
+        .group-item{margin:10px 0;font-size:18px;}
+        .student-list{height:620px;overflow-y:auto;padding:10px;font-size:13px;}
+        .student-item{padding:4px 6px;border-bottom:1px solid #eee;}
+        .student-item.highlight{background:#ffefb3;}
+        .input-wrap{margin:12px 0;}
+        input[type="text"]{padding:8px 10px;font-size:16px;width:260px;border:1px solid #ccc;border-radius:6px;}
+    </style>
+</head>
+<body>
+    <h1>研究生开学第一课·破冰游戏</h1>
+    <div class="rule-block">
+        <h4>📋游戏规则</h4>
+        <ol style="padding-left:20px;">
+            <li>一字长蛇依次在1‑2029范围内报数；</li>
+            <li>输入同学报出数字，系统自动判断大小并更新搜索区间；</li>
+            <li>成功猜中，填写答题同学姓名，自动随机抽取一道问题（亚瑟阿伦36问 / 普鲁斯特问卷）写入操作日志；也可选择现场同学给出问题或者大冒险选项；</li>
+            <li>全部数字猜完，展示全部数字集合。</li>
+        </ol>
+    </div>
+
+    <div class="container">
+        <!-- 左侧游戏主面板 -->
+        <div class="card">
+            <h2>🎮猜数字交互面板</h2>
+            <div class="info-line">搜索区间 low=<span id="low">1</span> ，high=<span id="high">2029</span></div>
+            <div class="info-line">当前第 <span id="studentIndex">1</span> 位同学</div>
+
+            <div class="input-wrap">
+                <label>同学报的数字：</label>
+                <input id="userGuessInput" type="text" placeholder="请输入同学报出的数字">
+                <button class="btn-sm" onclick="submitUserGuess()">确认报数</button>
+            </div>
+            <div class="input-wrap">
+                <label>答题同学姓名：</label>
+                <input id="studentNameInput" type="text" placeholder="猜对后填写姓名">
+            </div>
+            <div class="btn-group">
+                <button class="btn-warning" onclick="getRandomMixQuestion()">🎲随机抽取问题(阿伦/普鲁斯特)</button>
+                <button class="btn-warning" onclick="getRandomDare()">随机大冒险</button>
+                <button class="btn-danger" onclick="resetGame()">🔄 重置全部游戏</button>
+            </div>
+
+            <div style="margin-top:12px">操作日志：</div>
+            <div class="log" id="logBox"></div>
+
+            <div class="question-box">
+                <div class="question-title">本轮问题预览</div>
+                <div id="questionText">等待猜中数字后...</div>
+            </div>
+        </div>
+
+        <!-- 右侧：学生名单 -->
+        <div class="card">
+            <h2>👨‍🎓选修学生名单</h2>
+            <div class="student-list" id="studentListBox"></div>
+        </div>
+
+        <div class="final-panel" id="finalPanel">
+            <h2>✅全部数字挑战完成！三组汇总</h2>
+            <div class="group-item">👤第一组：11，33，420，520，45</div>
+            <div class="group-item">🌍第二组：44，5，1004，199</div>
+            <div class="group-item">☁️第三组：126，6，17，3</div>
+            <p style="margin-top:12px;font-size:16px">课堂讨论：数字人文中，人、地、天如何构成知识网络？</p>
+        </div>
+    </div>
+
+<script>
+//三组数据
+const batches = [
+    {nums:[11,33,420,520,45]},
+    {nums:[44,5,1004,199]},
+    {nums:[126,6,17,3]}
+];
+//学生名单
+const studentData = [
+    {sid:"20264203026",name:"方李",major:"信息资源管理"},
+    {sid:"20264203027",name:"陈一帆",major:"信息资源管理"},
+    {sid:"20264203028",name:"董慧鑫",major:"信息资源管理"},
+    {sid:"20264203029",name:"刘学颐",major:"信息资源管理"},
+    {sid:"20264203030",name:"莫洋欣蕊",major:"信息资源管理"},
+    {sid:"20264203031",name:"屠媛媛",major:"信息资源管理"},
+    {sid:"20264203032",name:"刘赞文",major:"信息资源管理"},
+    {sid:"20264203033",name:"高橙",major:"信息资源管理"},
+    {sid:"20264203034",name:"娄贺鑫",major:"信息资源管理"},
+    {sid:"20264203035",name:"唐晓妍",major:"信息资源管理"},
+    {sid:"20264203036",name:"陈晨",major:"信息资源管理"},
+    {sid:"20265203032",name:"刘贤贇",major:"图书情报"},
+    {sid:"20265203033",name:"刘一丹",major:"图书情报"},
+    {sid:"20265203034",name:"邱芷霖",major:"图书情报"},
+    {sid:"20265203035",name:"潘泽鑫",major:"图书情报"},
+    {sid:"20265203036",name:"于子轩",major:"图书情报"},
+    {sid:"20265203037",name:"岳非",major:"图书情报"},
+    {sid:"20265203038",name:"占磊",major:"图书情报"},
+    {sid:"20265203039",name:"顾婧怡",major:"图书情报"},
+    {sid:"20265203040",name:"袁帅",major:"图书情报"},
+    {sid:"20265203041",name:"吴亿玮",major:"图书情报"},
+    {sid:"20265203042",name:"周梦菲",major:"图书情报"},
+    {sid:"20265203043",name:"丁奕",major:"图书情报"},
+    {sid:"20265203044",name:"李如清",major:"图书情报"},
+    {sid:"20265203045",name:"王音奇",major:"图书情报"},
+    {sid:"20265203046",name:"许文杰",major:"图书情报"},
+    {sid:"20265203047",name:"李文涵",major:"图书情报"},
+    {sid:"20265203048",name:"尹一凡",major:"图书情报"},
+    {sid:"20265203049",name:"王泽琳",major:"图书情报"},
+    {sid:"20265203050",name:"张薛蓉",major:"图书情报"},
+    {sid:"20265203051",name:"彭星蕊",major:"图书情报"},
+    {sid:"20265203052",name:"潘昕予",major:"图书情报"},
+    {sid:"20265203053",name:"朱紫怡",major:"图书情报"},
+    {sid:"20265203054",name:"滕巍",major:"图书情报"},
+    {sid:"20265203055",name:"宋邢遥",major:"图书情报"},
+    {sid:"20265203056",name:"熊静婷",major:"图书情报"},
+    {sid:"20265203057",name:"许靖雯",major:"图书情报"},
+    {sid:"20265203058",name:"蒋庆霞",major:"图书情报"},
+    {sid:"20265203059",name:"张继元",major:"图书情报"},
+    {sid:"20265203060",name:"李卓柯",major:"图书情报"},
+    {sid:"20265203061",name:"许昊妍",major:"图书情报"},
+    {sid:"20265203062",name:"郭扬扬",major:"图书情报"},
+    {sid:"20265203063",name:"冯海花",major:"图书情报"},
+    {sid:"20265203064",name:"赵兴昊",major:"图书情报"},
+];
+
+//亚瑟阿伦36问
+const aron36 = [
+    "1. 如果可以随便选，你想和谁共进晚餐？",
+    "2. 你想成名吗？以什么方式？",
+    "3. 打电话前你会预演要说的话吗？为什么？",
+    "4. 对你来说，“完美的一天”是什么样？",
+    "5. 你上次独自唱歌是什么时候？对别人唱歌呢？",
+    "6. 如果你能活到90岁，你愿意保持30岁的心智还是身体？",
+    "7. 你对自己将如何死去有预感吗？",
+    "8. 说出三件你和对方看起来有共同点的事。",
+    "9. 人生中你最感激什么？",
+    "10. 如果你可以改变成长经历里的一件事，会是什么？",
+    "11. 用4分钟，尽可能详细地讲述你的人生故事。",
+    "12. 如果明天醒来你能获得一种新能力，你希望是什么？",
+    "13. 如果水晶球能告诉你真相，你最想知道什么？",
+    "14. 有没有一件事你一直想做，却还没做？为什么？",
+    "15. 你人生最大的成就是什么？",
+    "16. 一段友谊里你最看重什么？",
+    "17. 你最珍贵的记忆是什么？",
+    "18. 你最糟糕的记忆是什么？",
+    "19. 如果知道一年后会突然离世，你会改变现在的生活方式吗？为什么？",
+    "20. 友谊对你意味着什么？",
+    "21. 爱与喜欢在你生命里扮演什么角色？",
+    "22. 轮流说出你认为对方的优点，每人说5条。",
+    "23. 你的家人亲密温暖吗？童年是否比别人更快乐？",
+    "24. 你和母亲的关系怎么样？",
+    "25. 各自说一句关于自己的事实，假设对方是陌生人。",
+    "26. 分享一件尴尬的瞬间。",
+    "27. 你上一次在别人面前哭是什么时候？独自哭泣呢？",
+    "28. 告诉对方，你已经喜欢上他/她的哪一点。",
+    "29. 什么事情是严肃到不能开玩笑的？",
+    "30. 如果你今晚就要离世，没有机会和任何人告别，你最后悔没说什么？",
+    "31. 你的房子着火，救完亲人宠物，还能拿一件物品，拿什么？为什么？",
+    "32. 在所有家人中，谁的离去会让你最痛苦？为什么？",
+    "33. 分享一个你的私人难题，问问对方会怎么处理。",
+    "34. 告诉对方，你欣赏他/她身上的什么特质。",
+    "35. 讲一件你人生中很窘迫的事情。",
+    "36. 问对方一个私人问题，对方回答，然后交换。"
+];
+
+//普鲁斯特问卷
+const proust = [
+    "1. 你认为理想的幸福是什么？",
+    "2. 你最大的痛苦是什么？",
+    "3. 你最希望拥有哪种才华？",
+    "4. 你最恐惧什么？",
+    "5. 你目前的心境怎样？",
+    "6. 你认为自己最伟大的成就是什么？",
+    "7. 你自己的哪个特点让你最觉得痛恨？",
+    "8. 你最喜欢的旅行是哪一次？",
+    "9. 你最痛恨别人的什么特点？",
+    "10. 你最珍惜的财产是什么？",
+    "11. 你最奢侈的是什么？",
+    "12. 你最喜欢的职业是什么？",
+    "13. 你对自己外表哪一点不满意？",
+    "14. 你最后悔的事情是什么？",
+    "15. 还在世的人中你最鄙视谁？",
+    "16. 你最喜欢男性身上的什么品质？",
+    "17. 你最喜欢女性身上的什么品质？",
+    "18. 你使用过最多的单词或者词语是什么？",
+    "19. 你最喜欢的座右铭？",
+    "20. 你希望以什么样的方式死去？",
+    "21. 何时何地让你感觉到最快乐？",
+    "22. 如果你可以改变你的家庭一件事，那会是什么？",
+    "23. 如果你能选择的话，你希望让什么重现？",
+    "24. 你的座右铭是什么？"
+];
+
+//合并两套题库
+const allQuestionBank = [...aron36,...proust];
+
+const dareList = [
+    "分享一件最近让你感到快乐的小事",
+    "说出一门你感兴趣的数字人文研究方向",
+    "简单讲一个自己的小爱好",
+    "夸一夸身边一位同学",
+    "说一句对这门课的期待",
+    "模仿一个小表情，让大家猜情绪"
+];
+
+let batchIdx = 0;
+let targetList = [];
+let currentTarget = null;
+let low = 1;
+let high = 2029;
+let studentCounter = 1;
+let log = "";
+
+//渲染学生名单
+function renderStudentList(){
+    const box = document.getElementById("studentListBox");
+    box.innerHTML = "";
+    studentData.forEach(s=>{
+        const div = document.createElement("div");
+        div.className = "student-item";
+        div.innerText = `${s.sid}｜${s.name}｜${s.major}`;
+        box.appendChild(div);
+    })
+}
+
+//高亮某位学生
+function highlightStudent(name){
+    const items = document.querySelectorAll(".student-item");
+    items.forEach(el=>{
+        el.classList.remove("highlight");
+        if(el.innerText.includes(name)){
+            el.classList.add("highlight");
+            el.scrollIntoView({behavior:"smooth",block:"nearest"});
+        }
+    })
+}
+
+function initBatch(){
+    const b = batches[batchIdx];
+    targetList = [...b.nums];
+    low = 1;
+    high = 2029;
+    nextTarget();
+}
+function nextTarget(){
+    if(targetList.length ===0){
+        batchIdx++;
+        if(batchIdx >= batches.length){
+            document.getElementById("finalPanel").style.display="block";
+            return;
+        }
+        initBatch();
+        return;
+    }
+    currentTarget = targetList[0];
+    updateRangeUi();
+}
+function updateRangeUi(){
+    document.getElementById("low").textContent = low;
+    document.getElementById("high").textContent = high;
+    document.getElementById("studentIndex").textContent = studentCounter;
+}
+function addLog(s){
+    log += s+"\n";
+    document.getElementById("logBox").textContent = log;
+    document.getElementById("logBox").scrollTop = document.getElementById("logBox").scrollHeight;
+}
+
+//随机抽取混合题库，写入日志
+function getRandomMixQuestion(){
+    const idx = Math.floor(Math.random()*allQuestionBank.length);
+    const q = allQuestionBank[idx];
+    addLog(`❓本轮破冰问题：${q}`);
+    document.getElementById("questionText").innerText = q;
+}
+
+function getRandomDare(){
+    const idx = Math.floor(Math.random()*dareList.length);
+    const q = "🎲大冒险："+dareList[idx];
+    addLog(`${q}`);
+    document.getElementById("questionText").innerText = q;
+}
+
+function submitUserGuess(){
+    const val = document.getElementById("userGuessInput").value.trim();
+    const num = parseInt(val,10);
+    if(isNaN(num) || num<1 || num>2029){
+        alert("请输入1‑2029之间的有效数字");
+        return;
+    }
+    addLog(`第${studentCounter}位同学报数：${num}`);
+    document.getElementById("userGuessInput").value="";
+
+    //系统自动判断大小
+    if(num < currentTarget){
+        addLog(`→系统判断：猜小了，答案更大。更新范围：[${num+1}, ${high}]`);
+        low = num + 1;
+        studentCounter++;
+    }else if(num > currentTarget){
+        addLog(`→系统判断：猜大了，答案更小。更新范围：[${low}, ${num-1}]`);
+        high = num -1;
+        studentCounter++;
+    }else{
+        addLog(`→系统判断：✅猜对！数字：${num}`);
+        const nameInputDom = document.getElementById("studentNameInput");
+        const name = nameInputDom.value.trim();
+        if(name){
+            addLog(`👉本轮答题同学：${name}`);
+            highlightStudent(name);
+        }
+        //猜对自动抽题，直接输出到日志
+        getRandomMixQuestion();
+
+        targetList.shift();
+        setTimeout(()=>{
+            studentCounter++;
+            nameInputDom.value = "";
+            nextTarget();
+            updateRangeUi();
+        },1200);
+    }
+    updateRangeUi();
+}
+
+function resetGame(){
+    batchIdx = 0;
+    studentCounter =1;
+    low=1;high=2029;
+    log = "";
+    document.getElementById("logBox").textContent="";
+    document.getElementById("questionText").textContent="等待猜中数字后...";
+    document.getElementById("studentNameInput").value="";
+    document.getElementById("finalPanel").style.display="none";
+    initBatch();
+    updateRangeUi();
+}
+
+window.onload = function(){
+    renderStudentList();
+    initBatch();
+    updateRangeUi();
+}
+</script>
+</body>
+</html>
+<!-- （注：内容由AI生成） -->
