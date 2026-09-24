@@ -29,8 +29,11 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Generate flipbook from source (src/)
-        run: python build_flipbook.py --src src --book dsdh
+      - name: Install MkDocs + Material
+        run: pip install mkdocs mkdocs-material
+
+      - name: Build site (MkDocs)
+        run: mkdocs build
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -38,7 +41,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."
+          path: "site"
 
       - name: Deploy to GitHub Pages
         id: deployment
